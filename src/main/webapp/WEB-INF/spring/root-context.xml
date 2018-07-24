@@ -26,4 +26,5 @@
 	</bean>
 	
 	<context:component-scan base-package="org.zerock.persistence" />
+	<context:component-scan base-package="org.zerock.service" />
 </beans>

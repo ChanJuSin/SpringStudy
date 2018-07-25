@@ -42,3 +42,22 @@
 	</section>
 	
 <%@ include file="../include/footer.jsp" %>
+
+<script>
+	var formObj = $("form[role='form']");
+	
+	$(".btn-warring").on("click", function() {
+		formObj.attr("action", "/board/modify");
+		formObj.attr("method", "get");
+		formObj.submit();
+	});
+	
+	$(".btn-danger").on("click", function() {
+		formObj.attr("action", "/board/remove");
+		formObj.submit();
+	});
+	
+	$(".btn-primary").on("click", function() {
+		self.location = "/board/listAll";
+	});
+</script>

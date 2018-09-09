@@ -76,6 +76,27 @@
 		</div>
 	</section>
 
+    <div id="modifyModal" class="modal modal-primary" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body" data-rno>
+                    <p>
+                        <input type="text" id="replytext" class="form-control" />
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-info" id="replyModBtn" >Modify</button>
+                    <button type="button" class="btn btn-danger" id="replyDelBtn" >DELETE</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" >Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script id="template" type="text/x-handlebars-template">
     {{#each .}}
         <li class="replyLi" data-rno={{rno}}>
@@ -103,7 +124,7 @@
     let bno = ${boardVO.bno};
     let replyPage = 1;
 
-    const prinfData = (replyArr, target, templateObject) => {
+    const printData = (replyArr, target, templateObject) => {
         let template = Handlebars.compile(templateObject.html());
 
         let html = template(replyArr);
@@ -114,37 +135,33 @@
     const getPage = (pageInfo) => {
         $.getJSON(pageInfo)
             .then((data) => {
-                prinfData(data.list, $('#repliesDiv'), $('#template'));
+                printData(data.list, $('#repliesDiv'), $('#template'));
                 printPaging(data.pageMaker, $('.pagination'));
 
                 $('#modifyModal').modal('hide');
             })
             .fail((err) => {
-                console.log(`댓글 조회 오류 : ${err}`);
+                console.error(err);
             });
     };
 
     const printPaging = (pageMaker, target) => {
-        console.dir(pageMaker);
-        console.log(target);
-        console.log('페이징 처리 함수 호출');
-        let str = '';
+        let str = "";
 
         if (pageMaker.prev) {
-            str += '<li><a href=' + (pageMaker.startPage - 1) + '> << </a></li>';
+            str += "<li><a href='"+ (pageMaker.startpage - 1) +"'> << </a></li>";
         }
 
-        for (let i = pagemaker.startPage, len = pageMaker.endPage; i <= len; i++) {
+        for (let i = pageMaker.startPage, len = pageMaker.endPage; i <= len; i++) {
             let strClass = pageMaker.cri.page === i ? 'class=active':'';
-            str += '<li' + strClass + '><a href=' + i + '>'+ i +'</a></li>';
+			str += "<li " + strClass + "><a href='"+ i +"'>" + i +"</a></li>";
         }
 
         if (pageMaker.next) {
-            str += '<li><a href=' + (pageMaker.endPage + 1) + '> >> </a></li>';
+            str += "<li><a href='"+ (pageMaker.endPage + 1) +"'> << </a></li>";
         }
 
         target.html(str);
-        console.log('페이징 처리 함수 호출 끝');
     };
 
     Handlebars.registerHelper("prettifyDate", (timeValue) => {
@@ -174,7 +191,6 @@
 
     $('#repliesDiv').on('click', () => {
         if ($('.timeline li').size() > 1)  {
-            console.log('이미 댓글 목록이 로드되었습니다.');
             return;
         }
 
@@ -185,5 +201,97 @@
         event.preventDefault();
         replyPage = $(this).attr('href');
         getPage('/replies/' + bno + '/' + replyPage);
+    });
+
+    $("#replyAddBtn").on("click", () => {
+        let replyerObj = $("#newReplyWriter");
+        let replytextObj = $("#newReplyText");
+       	let replyer = replyerObj.val();
+       	let replytext = replytextObj.val();
+
+       	$.ajax({
+			type: "POST",
+			url: "/replies",
+			headers: {
+			    "Content-Type": "application/json",
+				"X-HTTP-Method-Override": "POST"
+			},
+			dataType: "text",
+			data: JSON.stringify({
+				bno: bno,
+				replyer: replyer,
+				replytext: replytext
+			})
+		})
+			.then((result) => {
+			    if (result === "success") {
+			        alert("등록되었습니다.");
+			        replyPage = 1;
+			        getPage("/replies/" + bno + '/' + replyPage);
+			        replyerObj.val("");
+			        replytextObj.val("");
+				}
+			})
+			.fail((err) => {
+                console.error(err);
+			});
+	});
+
+    $(".timeline").on("click", ".replyLi", function(event) {
+       let reply = $(this);
+
+       $("#replytext").val(reply.find(".timeline-body").text());
+       $(".modal-title").html(reply.attr("data-rno"));
+    });
+
+    $("#replyModBtn").on("click", () => {
+        let rno = $(".modal-title").html();
+        let replytext = $("#replytext").val();
+
+        $.ajax({
+            type: "PUT",
+            url: "/replies/" + rno,
+            headers: {
+                "Content-Type": "application/json",
+                "X-HTTP-Method-Override": "PUT"
+            },
+            dataType: "text",
+            data: JSON.stringify({
+                replytext: replytext
+            })
+        })
+            .then((result) => {
+                if (result === "success") {
+                    alert("수정 되었습니다.");
+                    getPage("/replies/" + bno + "/" + replyPage);
+                }
+            })
+            .fail((err) => {
+                console.error(err);
+            });
+    });
+
+    $("#replyDelBtn").on("click", () => {
+       let rno = $(".modal-title").html();
+       let replytext = $("#replytext").val();
+
+       $.ajax({
+           type: "DELETE",
+           url: "/replies/" + rno,
+           headers: {
+               "Content-Type": "application/json",
+               "X-HTTP-Method-Override": "DELETE"
+           },
+           dataType: "text"
+       })
+           .then((result) => {
+               if (result === "success") {
+                   alert("삭제 되었습니다.");
+                   getPage("/replies/" + bno + "/" + replyPage);
+               }
+           })
+           .fail((err) => {
+               console.error(err);
+           });
     });
 </script>

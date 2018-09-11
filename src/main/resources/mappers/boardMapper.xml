@@ -11,7 +11,7 @@
 	</insert>
 	
 	<select id="read" resultType="BoardVO">
-		select bno, title, content, writer, regdate, viewcnt
+		select bno, title, content, writer, regdate, viewcnt, replycnt
 		from tbl_board
 		where bno = #{bno}
 	</select>
@@ -48,7 +48,7 @@
 	
 	<select id="listCriteria" resultType="BoardVO">
 		<![CDATA[
-			select bno, title, content, writer, regdate, viewcnt
+			select bno, title, content, writer, regdate, viewcnt, replycnt
 			from tbl_board
 			where bno > 0
 			order by bno desc, regdate desc
@@ -116,5 +116,15 @@
 		
 		<include refid="search" />
 	</select>
+
+	<update id="updateReplyCnt">
+		update tbl_board set replycnt = replycnt + #{amount}
+		where bno = #{bno}
+	</update>
+
+	<update id="updateViewCnt">
+		update tbl_board set viewcnt = viewcnt + 1
+		where bno = #{bno}
+	</update>
 
 </mapper>

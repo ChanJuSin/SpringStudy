@@ -14,7 +14,7 @@ public class MyBatisTest {
 
 	@Inject
 	private SqlSession sqlSession;
-	
+
 	@Test
 	public void sqlSessionTest() {
 		System.out.println(sqlSession);

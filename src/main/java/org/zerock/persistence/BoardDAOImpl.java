@@ -91,4 +91,14 @@ public class BoardDAOImpl implements BoardDAO {
 		sqlSession.update(namespace + ".updateViewCnt", bno);
 	}
 
+	@Override
+	public void addAttach(String fullName) throws Exception {
+		sqlSession.insert(namespace + ".addAttach", fullName);
+	}
+
+	@Override
+	public List<String> getAttach(Integer bno) throws Exception {
+		return sqlSession.selectList(namespace + ".getAttach", bno);
+	}
+
 }

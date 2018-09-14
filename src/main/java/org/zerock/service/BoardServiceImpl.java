@@ -36,13 +36,25 @@ public class BoardServiceImpl implements BoardService {
 		return boardDAOImpl.read(bno);
 	}
 
+	@Transactional
 	@Override
 	public void modify(BoardVO board) throws Exception {
 		boardDAOImpl.update(board);
+		
+		Integer bno = board.getBno();
+		boardDAOImpl.deleteAttach(bno);
+		
+		String[] files = board.getFiles();
+		if (files == null) { return; }
+		for (String fileName: files) {
+			boardDAOImpl.replaceAttach(fileName, bno);
+		}
 	}
 
+	@Transactional
 	@Override
 	public void remove(Integer bno) throws Exception {
+		boardDAOImpl.deleteAttach(bno);
 		boardDAOImpl.delete(bno);
 	}
 

@@ -15,9 +15,9 @@ public class UploadFileUtils {
 	public static String uploadFile(String uploadPath, String originalName, byte[] fileData) throws Exception {
 		UUID uid = UUID.randomUUID();
 		
-		String savedName = uid.toString() + "_" + originalName;
-		String savedPath = calcPath(uploadPath);
-		
+		String savedName = uid.toString() + "_" + originalName; 
+		String savedPath = calcPath(uploadPath); 
+	
 		File target = new File(uploadPath + savedPath, savedName);
 		FileCopyUtils.copy(fileData, target);
 		
@@ -65,7 +65,7 @@ public class UploadFileUtils {
 		String formatName = fileName.substring(fileName.lastIndexOf(".") + 1);
 		
 		ImageIO.write(destImg, formatName.toUpperCase(), newFile);
-		return thumbnailName.substring(uploadPath.length()).replace(File.separatorChar, '/');
+		return thumbnailName.substring(uploadPath.length()).replace(File.separatorChar, '/'); 
 	}
 	
 	private static String makeIcon(String uploadPath, String path, String fileName) throws Exception {

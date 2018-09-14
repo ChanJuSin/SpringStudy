@@ -12,7 +12,7 @@
     <!-- Root Context: defines shared resources visible to all other web components -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="net.sf.log4jdbc.sql.jdbcapi.DriverSpy"/>
-        <property name="url" value="jdbc:log4jdbc:mysql://localhost:3306/book_ex3?useSSL=false"/>
+        <property name="url" value="jdbc:log4jdbc:mysql://localhost:3306/book_ex2?useSSL=false"/>
         <property name="username" value="zerock"/>
         <property name="password" value="zerock"/>
     </bean>

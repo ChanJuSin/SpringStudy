@@ -21,6 +21,6 @@ const getFileInfo = (fullName) => {
       getLink = "/displayFile?fileName=" + fullName;
   }
   fileName = fileLink.substr(fileLink.indexOf("_") + 1);
-
+  
   return {fileName: fileName, imgsrc: imgsrc, getLink: getLink, fullName: fullName};
 };

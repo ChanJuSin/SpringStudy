@@ -2,6 +2,11 @@
 
 <%@ include file="../include/header.jsp" %>
 
+<div class="popup back" style="display: none;"></div>
+<div id="popup_front" class="popup front" style="display: none;">
+    <img id="popup_img">
+</div>
+
 <section class="content">
     <div class="row">
         <div class="col-md-12">
@@ -40,8 +45,10 @@
 
                 <div class="box-footer">
                     <ul class="mailbox-attachments clearfix uploadedList"></ul>
-                    <button type="submit" class="btn btn-warring modifyBtn">Modify</button>
-                    <button type="submit" class="btn btn-danger removeBtn">REMOVE</button>
+                    <c:if test="${login.uid == boardVO.writer }">
+	                    <button type="submit" class="btn btn-warring modifyBtn">Modify</button>
+	                    <button type="submit" class="btn btn-danger removeBtn">REMOVE</button>
+                    </c:if>
                     <button type="submit" class="btn btn-primary goListBtn">LIST ALL</button>
                 </div>
             </div>
@@ -55,16 +62,26 @@
                     <h3 class="box-title">ADD NEW REPLY</h3>
                 </div>
 
-                <div class="box-body">
-                    <label for="newReplyWriter">Writer</label>
-                    <input class="form-control" type="text" placeholder="USER ID" id="newReplyWriter"/>
-                    <label for="newReplyText">Text</label>
-                    <input class="form-control" type="text" placeholder="REPLY TEXT" id="newReplyText"/>
-                </div>
+                <c:if test="${not empty login}">
+                	<div class="box-body">
+	                    <label for="newReplyWriter">Writer</label>
+	                    <input class="form-control" type="text" placeholder="USER ID" id="newReplyWriter" value="${login.uid }" readonly/>
+	                    <label for="newReplyText">Text</label>
+	                    <input class="form-control" type="text" placeholder="REPLY TEXT" id="newReplyText"/>
+               		</div>
 
-                <div class="box-footer">
-                    <button type="submit" class="btn btn-primary" id="replyAddBtn">ADD REPLY</button>
-                </div>
+	                <div class="box-footer">
+	                    <button type="submit" class="btn btn-primary" id="replyAddBtn">ADD REPLY</button>
+	                </div>
+                </c:if>
+                
+                <c:if test="${empty login}">
+                	<div class="box-body">
+                		<div>
+                			<a href="/user/login">Login Please</a>
+                		</div>
+                	</div>
+                </c:if>
             </div>
         </div>
     </div>
@@ -102,11 +119,6 @@
     </div>
 </div>
 
-<div class="popup back" style="display: none;"></div>
-<div id="popup_front" class="popup front" style="display: none;">
-    <img id="popup_img">
-</div>
-
 <script id="templateAttach" type="text/x-handlebars-template">
     <li data-src="{{fullName}}">
         <span class="mailbox-attachment-info has-img"><img src="{{imgsrc}}" alt="Attachment"></span>
@@ -129,7 +141,9 @@
             </h3>
             <div class="timeline-body">{{replytext}}</div>
             <div class="timeline-footer">
+				{{#eqReplyer replyer}}
                 <a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modifyModal">Modify</a>
+				{{/eqReplyer}}
             </div>
         </div>
     </li>
@@ -201,6 +215,14 @@
         let date = dateObj.getDate();
         return year + "/" + month + "/" + date;
     });
+    
+    Handlebars.registerHelper("eqReplyer", (replyer, block) => {
+        let accum = "";
+        if (replyer == "${login.uid}") {
+        	accum += block.fn();
+        }
+        return accum;
+    });
 
     $(".modifyBtn").on("click", () => {
         formObj.attr("action", "/sboard/modifyPage");
@@ -209,6 +231,25 @@
     });
 
     $(".removeBtn").on("click", () => {
+    	const replyCnt = $("#replycntSmall").html().replace(/[^0~9]/g, "");
+    	
+    	if (replyCnt > 0) {
+    		alert("댓글이 달린 게시물은 삭제할 수 없습니다.");
+    		return;
+    	}
+    	
+    	let arr = [];
+    	
+    	$(".uploadedList li").index(function(index) {
+    		arr.push($(this).attr("data-src"));
+    	});
+    	
+    	if (arr.length > 0) {
+    		$.post("/deleteAllFiles", {files:arr}, function() {
+    			
+    		});
+    	}
+    	
         formObj.attr("action", "/sboard/removePage");
         formObj.submit();
     });
@@ -335,15 +376,13 @@
 
     // 썸네일 이미지 클릭시 원본 이미지 보여줌
     $(".uploadedList").on("click", ".mailbox-attachment-info a", function(event) {
-        var fileLink = $(this).attr("href");
+        const fileLink = $(this).attr("href");
 
         if (checkImageType(fileLink)) {
             event.preventDefault();
 
-            var imgTag = $("#popup_img");
+            const imgTag = $("#popup_img");
             imgTag.attr("src", fileLink);
-
-            console.log(imgTag.attr("src"));
 
             $(".popup").show("slow");
             imgTag.addClass("show");
